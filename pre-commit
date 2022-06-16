@@ -1,0 +1,55 @@
+#!/bin/sh
+#
+# https://verdantfox.com/blog/view/how-to-use-git-pre-commit-hooks-the-hard-way-and-the-easy-way
+# https://stackoverflow.com/questions/20028507/git-stash-uncached-how-to-put-away-all-unstaged-changesi
+
+#  The hook should exit with non-zero status after issuing an
+#  appropriate message if it wants to stop the commit.
+#
+
+# If any command fails, exit immediately with that command's exit status
+set -eo pipefail
+
+# Find all changed files for this commit
+# Compute the diff only once to save a small amount of time.
+CHANGED_FILES=$(git diff --name-only --cached --diff-filter=ACMR)
+# Get only changed files that match our file suffix pattern
+get_pattern_files() {
+    pattern=$(echo "$*" | sed "s/ /\$\\\|/g")
+    echo "$CHANGED_FILES" | { grep "$pattern$" || true; }
+}
+# Get all changed python files
+PY_FILES=$(get_pattern_files .py)
+
+stashes=$(git stash list)
+if [[ '' == ${stashes:0:5} ]]
+then
+  echo 'nothing is stashed, clear to proceed'
+  echo ''
+else
+  echo 'The precommit and post commit hooks use the stash and require it to be empty. Exiting.'
+  exit 1
+fi
+
+if [[ -n "$PY_FILES" ]]
+then
+    git commit --no-verify -m "WIP"
+    git stash
+    git reset --soft HEAD^
+    echo "\n\n\nCALL 4: running black $PY_FILES"
+    black $PY_FILES
+    echo "\n\n\nCALL 6:running git add $PY_FILES"
+    git add $PY_FILES
+fi
+
+echo 'at the conlusion of the prehook commit...'
+echo '    all unstaged changes (red changes) are in the stash'
+echo '    all staged changes (green changes) have been linted'
+
+# ok the stash command is a little bit funny. It stashes the staged changes and leaves them in the index.
+# so when you then chaneg the index and commit it, it doesn't agree with the stash.
+# I am accounting for the situation where I have a file with both staged and unstaged changes.
+
+# So let us just format everthing ..... ah no. Your formats would be unstaged, and then would get stashed.
+# I don't have a solution to this. other than to read more onlin3e abouttthe git stash command.
+#

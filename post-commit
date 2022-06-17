@@ -2,4 +2,4 @@
 echo 'post-commit hook: '
 set -eo pipefail
 git stash pop
-echo ''
+echo 'STRANGELY THIS LINE NEVER EXECUTES'

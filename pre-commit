@@ -36,15 +36,17 @@ then
     git commit --no-verify -m "WIP"
     git stash
     git reset --soft HEAD^
-    echo "\n\n\nCALL 4: running black $PY_FILES"
+    echo "\n\nblack $PY_FILES"
     black $PY_FILES
-    echo "\n\n\nCALL 6:running git add $PY_FILES"
+    echo "\n\ngit add $PY_FILES"
     git add $PY_FILES
+    echo ''
 fi
 
-echo 'at the conlusion of the prehook commit...'
+echo 'at the conlusion of the pre-commit hook...'
 echo '    all unstaged changes (red changes) are in the stash'
 echo '    all staged changes (green changes) have been linted'
+echo '\n\n'
 
 # ok the stash command is a little bit funny. It stashes the staged changes and leaves them in the index.
 # so when you then chaneg the index and commit it, it doesn't agree with the stash.

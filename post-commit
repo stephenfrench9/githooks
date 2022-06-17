@@ -1,2 +1,4 @@
+#!/bin/sh
+echo 'start post-commit hook'
 set -eo pipefail
 git stash pop

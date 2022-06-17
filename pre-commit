@@ -46,7 +46,7 @@ fi
 echo 'at the conlusion of the pre-commit hook...'
 echo '    all unstaged changes (red changes) are in the stash'
 echo '    all staged changes (green changes) have been linted'
-echo '\n\n'
+echo '\n'
 
 # ok the stash command is a little bit funny. It stashes the staged changes and leaves them in the index.
 # so when you then chaneg the index and commit it, it doesn't agree with the stash.

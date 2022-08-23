@@ -9,7 +9,7 @@
 
 # If any command fails, exit immediately with that command's exit status
 set -eo pipefail
-
+echo 'pre-commit hook is running'
 # Find all changed files for this commit
 # Compute the diff only once to save a small amount of time.
 CHANGED_FILES=$(git diff --name-only --cached --diff-filter=ACMR)
@@ -22,6 +22,9 @@ get_pattern_files() {
 PY_FILES=$(get_pattern_files .py)
 
 stashes=$(git stash list)
+echo 'precommit hook has located the following stashed files:'
+git stash list
+
 if [[ '' == ${stashes:0:5} ]]
 then
   echo 'nothing is stashed, clear to proceed'

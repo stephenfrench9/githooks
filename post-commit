@@ -1,5 +1,6 @@
 #!/bin/sh
-echo 'post-commit hook: '
+echo 'Running post-commit hook...'
 set -eo pipefail
+echo 'Running git stash pop...'
 git stash pop
 echo 'STRANGELY THIS LINE NEVER EXECUTES'

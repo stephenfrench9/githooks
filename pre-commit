@@ -9,7 +9,7 @@
 
 # If any command fails, exit immediately with that command's exit status
 set -eo pipefail
-echo 'pre-commit hook is running'
+echo 'Running pre-commit hook....'
 # Find all changed files for this commit
 # Compute the diff only once to save a small amount of time.
 CHANGED_FILES=$(git diff --name-only --cached --diff-filter=ACMR)
@@ -41,16 +41,32 @@ then
     git reset --soft HEAD^
     echo "\n\nblack $PY_FILES"
     black $PY_FILES
+    echo "\n\nflake8 $PY_FILES"
+    flake8 $PY_FILES
     echo "\n\ngit add $PY_FILES"
     git add $PY_FILES
     echo ''
 fi
 
-echo 'at the conlusion of the pre-commit hook...'
+#echo $PY_FILES
+
+#for filee in $PY_FILES
+#do
+#  echo 'one one'
+#  echo $filee
+#  echo filee
+#  sed -i '.bak' '1s/^/from auto_pipeline.ssf.constants.constants import needing_gdna_pool\'$'\n/g' $filee
+#  sed -i '.bak' '1s/^/from auto_pipeline.ssf.constants.constants import needing_review_pool\'$'\n/g' $filee
+#  echo ''
+#done
+
+
+echo 'At the conlusion of the pre-commit hook'
 echo '    all unstaged changes (red changes) are in the stash'
 echo '    all staged changes (green changes) have been linted'
 echo '\n'
 
+#exit 1
 # ok the stash command is a little bit funny. It stashes the staged changes and leaves them in the index.
 # so when you then chaneg the index and commit it, it doesn't agree with the stash.
 # I am accounting for the situation where I have a file with both staged and unstaged changes.

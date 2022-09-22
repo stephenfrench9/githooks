@@ -3,4 +3,4 @@ echo 'Running post-commit hook...'
 set -eo pipefail
 echo 'Running git stash pop...'
 git stash pop
-echo 'STRANGELY THIS LINE NEVER EXECUTES'
+echo 'STRANGELY THIS LINE NEVER EXECUTES, unless I include --no-verify'

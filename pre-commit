@@ -9,7 +9,7 @@
 
 # If any command fails, exit immediately with that command's exit status
 set -eo pipefail
-echo 'Running pre-commit hook....'
+echo 'PRE-COMMIT HOOK: START'
 # Find all changed files for this commit
 # Compute the diff only once to save a small amount of time.
 CHANGED_FILES=$(git diff --name-only --cached --diff-filter=ACMR)
@@ -22,46 +22,48 @@ get_pattern_files() {
 PY_FILES=$(get_pattern_files .py)
 
 stashes=$(git stash list)
-echo 'precommit hook has located the following stashed files:'
+echo 'PRE-COMMIT HOOK: located the following stashed files:'
 git stash list
 
 if [[ '' == ${stashes:0:5} ]]
 then
-  echo 'nothing is stashed, clear to proceed'
+  echo 'PRE-COMMIT HOOK: nothing is stashed, clear to proceed'
   echo ''
 else
-  echo 'The precommit and post commit hooks use the stash and require it to be empty. Exiting.'
+  echo 'PRE-COMMIT HOOK: The precommit and post commit hooks use the stash and require it to be empty. Exiting.'
   exit 1
 fi
+
+# from a ops-client-worker CI run
+#docker-compose run --service-ports --rm app flake8 \
+#    --exclude= \
+#    --jobs=auto --ignore E501,W503,E731 ops_client_worker/
 
 if [[ -n "$PY_FILES" ]]
 then
     git commit --no-verify -m "WIP"
+    echo 'PRE-COMMIT HOOK: stashing red changes ...'
     git stash
     git reset --soft HEAD^
     echo "\n\nblack $PY_FILES"
     black $PY_FILES
     echo "\n\nflake8 $PY_FILES"
-    flake8 $PY_FILES
+    {
+      flake8 --ignore E501,W503,E731 --max-line-length 88 $PY_FILES
+    } || {
+      echo 'PRE-COMMIT HOOK: flake failed, popping the stash'
+      git stash pop
+      echo 'PRE-COMMIT HOOK: black was applied to the green changes, but not the red'
+      echo 'PRE-COMMIT HOOK: exiting with status code 1, in order to prevent the commit'
+      exit 1
+    }
+    echo 'flake succeeded'
     echo "\n\ngit add $PY_FILES"
     git add $PY_FILES
     echo ''
 fi
 
-#echo $PY_FILES
-
-#for filee in $PY_FILES
-#do
-#  echo 'one one'
-#  echo $filee
-#  echo filee
-#  sed -i '.bak' '1s/^/from auto_pipeline.ssf.constants.constants import needing_gdna_pool\'$'\n/g' $filee
-#  sed -i '.bak' '1s/^/from auto_pipeline.ssf.constants.constants import needing_review_pool\'$'\n/g' $filee
-#  echo ''
-#done
-
-
-echo 'At the conlusion of the pre-commit hook'
+echo 'PRE-COMMIT HOOK: At the conlusion of the pre-commit hook'
 echo '    all unstaged changes (red changes) are in the stash'
 echo '    all staged changes (green changes) have been linted'
 echo '\n'

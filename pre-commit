@@ -85,7 +85,7 @@ echo $prefix'# Popping the stash...'
 {
   git stash pop
 } || {
-  echo $prefix'# git stash pop failed'
+  echo $prefix'# The stash was empty'
 }
 
 echo $prefix'# running git status one file time before the commit ...'

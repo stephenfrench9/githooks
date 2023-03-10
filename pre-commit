@@ -31,16 +31,10 @@ git stash list
 if [[ '' == ${stashes:0:5} ]]
 then
   echo $prefix'# nothing is stashed'
-  echo ''
 else
   echo $prefix'# The precommit hook requires the stash to be empty. Exiting.'
   exit 1
 fi
-
-# from a ops-client-worker CI run
-#docker-compose run --service-ports --rm app flake8 \
-#    --exclude= \
-#    --jobs=auto --ignore E501,W503,E731 ops_client_worker/
 
 if [[ -n "$PY_FILES" ]]
 then
@@ -76,7 +70,6 @@ fi
 
 echo $prefix'# all unstaged changes (red changes) are in the stash'
 echo $prefix'# all staged changes (green changes) have been linted'
-echo '\n'
 
 echo $prefix'git status'
 git status

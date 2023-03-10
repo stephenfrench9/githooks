@@ -9,7 +9,8 @@
 
 # If any command fails, exit immediately with that command's exit status
 set -eo pipefail
-echo 'PRE-COMMIT HOOK: START'
+prefix='*************************: '
+echo $prefix'# START'
 # Find all changed files for this commit
 # Compute the diff only once to save a small amount of time.
 CHANGED_FILES=$(git diff --name-only --cached --diff-filter=ACMR)
@@ -21,16 +22,18 @@ get_pattern_files() {
 # Get all changed python files
 PY_FILES=$(get_pattern_files .py)
 
+
+
 stashes=$(git stash list)
-echo 'PRE-COMMIT HOOK: located the following stashed files:'
+echo $prefix'git stash list'
 git stash list
 
 if [[ '' == ${stashes:0:5} ]]
 then
-  echo 'PRE-COMMIT HOOK: nothing is stashed, clear to proceed'
+  echo $prefix'# nothing is stashed'
   echo ''
 else
-  echo 'PRE-COMMIT HOOK: The precommit and post commit hooks use the stash and require it to be empty. Exiting.'
+  echo $prefix'# The precommit hook requires the stash to be empty. Exiting.'
   exit 1
 fi
 
@@ -42,31 +45,53 @@ fi
 if [[ -n "$PY_FILES" ]]
 then
     git commit --no-verify -m "WIP"
-    echo 'PRE-COMMIT HOOK: stashing red changes ...'
+    echo $prefix'# hiding green changes in a temporary commit ...'
+    echo $prefix'git commit --no-verify -m "WIP"'
     git stash
     git reset --soft HEAD^
     echo "\n\nblack $PY_FILES"
-    black $PY_FILES
-    echo "\n\nflake8 $PY_FILES"
     {
-      flake8 --ignore E501,W503,E731 --max-line-length 88 $PY_FILES
+      black $PY_FILES
     } || {
-      echo 'PRE-COMMIT HOOK: flake failed, popping the stash'
+      echo $prefix'# !warning: black failed'
       git stash pop
-      echo 'PRE-COMMIT HOOK: black was applied to the green changes, but not the red'
-      echo 'PRE-COMMIT HOOK: exiting with status code 1, in order to prevent the commit'
       exit 1
     }
-    echo 'flake succeeded'
-    echo "\n\ngit add $PY_FILES"
+    echo "\n\n"$prefix"flake8 $PY_FILES"
+    {
+      flake8 --ignore E203,W503,E731 --max-line-length 111 $PY_FILES
+    } || {
+      echo $prefix'# warning: flake failed'
+      echo $prefix'git stash pop'
+      git stash pop
+      echo $prefix'# black was applied to the green changes, but not the red'
+      echo $prefix'# exiting with status code 1, in order to prevent the commit'
+      exit 1
+    }
+    echo $prefix'# flake succeeded'
+    echo "\n\n"$prefix"git add $PY_FILES"
     git add $PY_FILES
     echo ''
 fi
 
-echo 'PRE-COMMIT HOOK: At the conlusion of the pre-commit hook'
-echo '    all unstaged changes (red changes) are in the stash'
-echo '    all staged changes (green changes) have been linted'
+echo $prefix'# all unstaged changes (red changes) are in the stash'
+echo $prefix'# all staged changes (green changes) have been linted'
 echo '\n'
+
+echo $prefix'git status'
+git status
+
+echo $prefix'# Popping the stash...'
+{
+  git stash pop
+} || {
+  echo $prefix'# git stash pop failed'
+}
+
+echo $prefix'# running git status one file time before the commit ...'
+echo $prefix'git status'
+git status
+
 
 #exit 1
 # ok the stash command is a little bit funny. It stashes the staged changes and leaves them in the index.

@@ -41,7 +41,10 @@ then
     git commit --no-verify -m "WIP"
     echo $prefix'# hiding green changes in a temporary commit ...'
     echo $prefix'git commit --no-verify -m "WIP"'
+    echo $prefix'git stash'
     git stash
+    echo $prefix'# restoring green changes ...'
+    echo $prefix'git reset --soft HEAD^'
     git reset --soft HEAD^
     echo "\n\nblack $PY_FILES"
     {

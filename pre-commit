@@ -84,7 +84,7 @@ echo $prefix'# Popping the stash...'
   echo $prefix'# The stash was empty'
 }
 
-echo $prefix'# running git status one file time before the commit ...'
+echo $prefix'# running git status one final time before the commit ...'
 echo $prefix'git status'
 git status
 

@@ -38,7 +38,7 @@ git stash list
 
 if [[ '' == ${stashes:0:5} ]]
 then
-  echo $prefix'# nothing is stashed'
+  echo $prefix'# nothing was stashed'
 else
   echo $prefix'# The precommit hook requires the stash to be empty. Exiting.'
   exit 1

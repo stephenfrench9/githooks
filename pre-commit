@@ -1,11 +1,18 @@
 #!/bin/sh
 
+#
+# This githook lints and formats (with black) all staged (green) changes, while leaving
+# un-staged changes unaffected.
+#
+
 # https://verdantfox.com/blog/view/how-to-use-git-pre-commit-hooks-the-hard-way-and-the-easy-way
 # https://stackoverflow.com/questions/20028507/git-stash-uncached-how-to-put-away-all-unstaged-changesi
 
 
 # If any command fails, exit immediately with that command's exit status
 set -eo pipefail
+
+# Preamble
 stars='************************************'
 prefix=$stars': '
 suffix=' :'$stars
@@ -107,7 +114,7 @@ echo $prefix'git stash pop'
 {
   git stash pop
 } || {
-  echo $prefix'# pop failed'
+  echo ''
 }
 
 echo $prefix'# running git status one final time before the commit ...'

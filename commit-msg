@@ -1,10 +1,13 @@
+#!/bin/sh
+
+#
+# This githook adds the branch name as a prefix to every commit
+#
 
 touch .git/TMP
 chmod 777 .git/TMP
 
 echo \[$(git rev-parse --abbrev-ref HEAD)\] $(cat $1 | grep -v \#)  >> .git/TMP
-
-
 cat .git/TMP > $1
 
 rm .git/TMP

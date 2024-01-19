@@ -1,7 +1,2 @@
 #!/bin/sh
-echo 'POST-COMMIT HOOK: only line'
-# set -eo pipefail
-#echo 'POST-COMMIT HOOK: git stash pop'
-#git stash pop
-#echo 'POST-COMMIT HOOK: Post Pop, commands seem execute sporadically.'
-#echo 'POST-COMMIT HOOK: When unstaged (red) changes and no flake or black failures, I see these lines'
+

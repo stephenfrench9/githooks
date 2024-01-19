@@ -2,7 +2,7 @@
 touch .git/TMP
 chmod 777 .git/TMP
 
-echo $(git rev-parse --abbrev-ref HEAD) $(cat $1)  >> .git/TMP
+echo \[$(git rev-parse --abbrev-ref HEAD)\] $(cat $1 | grep -v \#)  >> .git/TMP
 
 
 cat .git/TMP > $1

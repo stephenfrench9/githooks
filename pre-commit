@@ -1,28 +1,34 @@
 #!/bin/sh
-#
+
 # https://verdantfox.com/blog/view/how-to-use-git-pre-commit-hooks-the-hard-way-and-the-easy-way
 # https://stackoverflow.com/questions/20028507/git-stash-uncached-how-to-put-away-all-unstaged-changesi
 
-#  The hook should exit with non-zero status after issuing an
-#  appropriate message if it wants to stop the commit.
-#
 
 # If any command fails, exit immediately with that command's exit status
 set -eo pipefail
 prefix='*************************: '
 echo $prefix'# START'
+
+#
 # Find all changed files for this commit
+#
+
 # Compute the diff only once to save a small amount of time.
 CHANGED_FILES=$(git diff --name-only --cached --diff-filter=ACMR)
+
 # Get only changed files that match our file suffix pattern
 get_pattern_files() {
     pattern=$(echo "$*" | sed "s/ /\$\\\|/g")
     echo "$CHANGED_FILES" | { grep "$pattern$" || true; }
 }
+
 # Get all changed python files
 PY_FILES=$(get_pattern_files .py)
 
 
+#
+# Confirm stash is empty before preceding, otherwise bail
+#
 
 stashes=$(git stash list)
 echo $prefix'git stash list'
@@ -36,38 +42,55 @@ else
   exit 1
 fi
 
+#
+# 1) Hide the unstaged changes.
+# 2) Run Black and Flake against the staged changes only.
+# 3) Commit
+# 4) Restore unstaged changes
+#
+
 if [[ -n "$PY_FILES" ]]
 then
-    git commit --no-verify -m "WIP"
-    echo $prefix'# hiding green changes in a temporary commit ...'
+    echo $prefix'# green changes will be hidden in a temporary commit ...'
     echo $prefix'git commit --no-verify -m "WIP"'
+    git commit --no-verify -m "WIP"
+
+    echo $prefix'# red changes will be hidden in the stash ...'
     echo $prefix'git stash'
     git stash
-    echo $prefix'# restoring green changes ...'
+
+    echo $prefix'# green changes will be restored ...'
     echo $prefix'git reset --soft HEAD^'
     git reset --soft HEAD^
+
+    echo $prefix'# black will run ...'
     echo "\n\nblack $PY_FILES"
     {
       black $PY_FILES
     } || {
-      echo $prefix'# !warning: black failed'
-      git stash pop
+      echo $prefix'# !warning: black failed. This is undefined behavior. Please run "git stash list.", and then debug'
       exit 1
     }
-    echo "\n\n"$prefix"flake8 $PY_FILES"
+
+    {
+      echo "\n\n"$prefix"git add $PY_FILES"
+      git add $PY_FILES
+    } || {
+      echo $prefix'# !warning: black changes could not be staged. This is undefined behavior. Please run "git stash list.", and then debug'
+      exit 1
+    }
+
+    echo "\n\n"$prefix"flake8 --ignore E203,W503,E731,F821 --max-line-length 111 $PY_FILES"
     {
       flake8 --ignore E203,W503,E731,F821 --max-line-length 111 $PY_FILES
     } || {
       echo $prefix'# warning: flake failed'
       echo $prefix'git stash pop'
       git stash pop
-      echo $prefix'# black was applied to the green changes, but not the red'
       echo $prefix'# exiting with status code 1, in order to prevent the commit'
       exit 1
     }
     echo $prefix'# flake succeeded'
-    echo "\n\n"$prefix"git add $PY_FILES"
-    git add $PY_FILES
     echo ''
 fi
 
@@ -77,23 +100,14 @@ echo $prefix'# all staged changes (green changes) have been linted'
 echo $prefix'git status'
 git status
 
-echo $prefix'# Popping the stash...'
+echo $prefix'# the stash will be Popped ...'
+echo $prefix'# git stash pop'
 {
   git stash pop
 } || {
-  echo $prefix'# The stash was empty'
+  echo $prefix'# pop failed'
 }
 
 echo $prefix'# running git status one final time before the commit ...'
 echo $prefix'git status'
 git status
-
-
-#exit 1
-# ok the stash command is a little bit funny. It stashes the staged changes and leaves them in the index.
-# so when you then chaneg the index and commit it, it doesn't agree with the stash.
-# I am accounting for the situation where I have a file with both staged and unstaged changes.
-
-# So let us just format everthing ..... ah no. Your formats would be unstaged, and then would get stashed.
-# I don't have a solution to this. other than to read more onlin3e abouttthe git stash command.
-#

@@ -6,7 +6,7 @@
 
 # If any command fails, exit immediately with that command's exit status
 set -eo pipefail
-stars='*************************'
+stars='************************************'
 prefix=$stars': '
 suffix=' :'$stars
 echo $prefix'# BEGIN precommit hook #'$suffix

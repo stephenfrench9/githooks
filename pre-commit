@@ -7,7 +7,7 @@
 # If any command fails, exit immediately with that command's exit status
 set -eo pipefail
 prefix='*************************: '
-echo $prefix'# START'
+echo $prefix'# BEGIN precommit hook #'$prefix
 
 #
 # Find all changed files for this commit
@@ -111,4 +111,4 @@ echo $prefix'# git stash pop'
 echo $prefix'# running git status one final time before the commit ...'
 echo $prefix'# git status'
 git status
-echo $prefix'# precommit hook concluded'
+echo $prefix'# CONCLUDE precommit hook #'$prefix

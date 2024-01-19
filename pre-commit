@@ -113,4 +113,4 @@ echo $prefix'# git stash pop'
 echo $prefix'# running git status one final time before the commit ...'
 echo $prefix'# git status'
 git status
-echo $prefix'# CONCLUDE precommit hook # :'$suffix
+echo $prefix'# CONCLUDE precommit hook #'$suffix

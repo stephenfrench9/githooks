@@ -89,9 +89,9 @@ then
       exit 1
     }
 
-    echo "\n\n"$prefix"flake8 --ignore E203,W503,E731,F821 --max-line-length 111 $PY_FILES"
+    echo "\n\n"$prefix"flake8 --ignore E203,W503,E731 --max-line-length 111 $PY_FILES"
     {
-      flake8 --ignore E203,W503,E731,F821 --max-line-length 111 $PY_FILES
+      flake8 --ignore E203,W503,E731 --max-line-length 111 $PY_FILES
     } || {
       echo $prefix'# warning: flake failed'
       echo $prefix'git stash pop'
